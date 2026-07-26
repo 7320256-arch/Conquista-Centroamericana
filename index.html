@@ -45,14 +45,81 @@ body.mobile-device .zoom-btn { width:26px; height:26px; font-size:0.7rem; min-wi
 
 /* Mobile: console becomes bottom bar + slide-up panels */
 body.mobile-device .console-section {
-    position:fixed; bottom:0; left:0; right:0; width:100%; min-width:100%; max-height:50vh;
+    position:fixed; bottom:0; left:0; right:0; width:100%; min-width:100%; max-height:55vh;
     border-radius:14px 14px 0 0; border-left:none; border-top:2px solid var(--cyan-glow);
     box-shadow:0 -6px 25px rgba(0,0,0,0.8); z-index:150;
     transform:translateY(calc(100% - 52px)); /* Show only tab bar by default */
-    transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
     background:var(--panel-bg);
 }
+/* Space at bottom so toggle bar doesn't overlap */
+body.mobile-device .map-viewport { padding-bottom:40px; }
 body.mobile-device .console-section.expanded { transform:translateY(0); }
+
+/* === MOBILE CONSOLE CLOSE BAR === */
+.mobile-console-close {
+    display:none; align-items:center; justify-content:center;
+    padding:6px 0 2px; cursor:pointer; background:var(--panel-bg);
+    border-radius:14px 14px 0 0; position:relative;
+    -webkit-tap-highlight-color:transparent; user-select:none;
+}
+body.mobile-device .mobile-console-close { display:flex; flex-direction:column; align-items:center; }
+.mobile-close-bar {
+    display:block; width:36px; height:4px; background:rgba(255,255,255,0.35);
+    border-radius:2px; margin-bottom:4px;
+}
+.mobile-close-x {
+    font-size:1.2rem; color:rgba(255,255,255,0.6); line-height:1;
+    font-weight:bold; min-height:28px; min-width:28px;
+    display:flex; align-items:center; justify-content:center;
+}
+.mobile-close-x:active { color:#fff; }
+
+/* === MOBILE CONSOLE TOGGLE BAR (bottom of map) === */
+.mobile-console-toggle-bar {
+    display:none; position:fixed; bottom:0; left:0; right:0; z-index:155;
+    background:rgba(10,15,24,0.95); border-top:1px solid var(--panel-border);
+    padding:8px; text-align:center; cursor:pointer;
+    border-radius:10px 10px 0 0;
+    -webkit-tap-highlight-color:transparent; user-select:none;
+}
+body.mobile-device .mobile-console-toggle-bar { display:block; }
+.mobile-toggle-handle {
+    width:40px; height:4px; background:rgba(255,255,255,0.4);
+    border-radius:2px; margin:0 auto 4px;
+}
+.mobile-toggle-label {
+    font-size:0.6rem; color:var(--cyan-glow); font-weight:700;
+    letter-spacing:1px; text-transform:uppercase;
+}
+
+/* === ZOOM ISOLATION: only the SVG map zooms, NOT the page === */
+body.mobile-device {
+    overflow:hidden;
+    touch-action:manipulation;
+}
+body.mobile-device .map-viewport {
+    overflow:hidden;
+    touch-action:manipulation;
+}
+/* The zoom transform ONLY applies to #map-zoom-group inside the SVG.
+   The SVG itself stays fixed at 100% width/height.
+   Header, toolbar, and console NEVER move. */
+
+
+
+/* Make the quick action buttons more visible */
+.mobile-quick-actions {
+    bottom:68px; /* Above the toggle bar */
+}
+.mobile-quick-btn {
+    opacity:0.85;
+}
+.mobile-quick-btn:active { opacity:1; transform:scale(0.9); }
+
+/* Ensure the toggle bar is always above console */
+.mobile-console-toggle-bar { z-index:160; }
+body.mobile-device .console-section { z-index:150; }
 body.mobile-device .console-tabs { 
     padding:0 4px; overflow-x:auto; -webkit-overflow-scrolling:touch;
     background:#0a0f18; border-bottom:1px solid var(--panel-border);
@@ -654,7 +721,12 @@ select { font-size:0.8rem; min-height:36px; -webkit-appearance:none; }
         </div>
 
         <!-- Right: Command Console -->
-        <div class="console-section">
+        <div class="console-section">            <!-- Mobile: close button for console panel -->
+            <div class="mobile-console-close" onclick="collapseMobileConsole()">
+                <span class="mobile-close-bar"></span>
+                <span class="mobile-close-x">✕</span>
+            </div>
+
             <div class="console-tabs">
                 <button class="tab-btn active" id="tab-btn-command" onclick="switchTab('command')">
                     <span class="tab-icon">🎖️</span> Mando
@@ -2494,6 +2566,76 @@ function initMapSVG() {
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
         zoomMap(delta);
     });
+    
+}
+
+
+// --- TOUCH PINCH-ZOOM FOR MOBILE DEVICES ---
+let _touchStartDist = 0;
+let _touchStartZoom = 0;
+let _touchStartPanX = 0;
+let _touchStartPanY = 0;
+let _touchMidX = 0;
+let _touchMidY = 0;
+let _isPinching = false;
+let _singleTouch = false;
+
+function _getTouchDist(t1, t2) {
+    var dx = t1.clientX - t2.clientX;
+    var dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+}
+
+function initMobileZoom() {
+    var viewport = document.getElementById('map-viewport');
+    if (!viewport) return;
+    
+    viewport.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            _isPinching = true;
+            _touchStartDist = _getTouchDist(e.touches[0], e.touches[1]);
+            _touchStartZoom = STATE.zoom;
+            _touchStartPanX = STATE.panX;
+            _touchStartPanY = STATE.panY;
+            _touchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            _touchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        } else if (e.touches.length === 1 && !_isPinching) {
+            _singleTouch = true;
+            STATE.isDragging = true;
+            STATE.dragStartX = e.touches[0].clientX - STATE.panX;
+            STATE.dragStartY = e.touches[0].clientY - STATE.panY;
+        }
+    }, { passive: false });
+    
+    viewport.addEventListener('touchmove', function(e) {
+        if (_isPinching && e.touches.length === 2) {
+            e.preventDefault();
+            var newDist = _getTouchDist(e.touches[0], e.touches[1]);
+            var scale = newDist / Math.max(1, _touchStartDist);
+            var newZoom = Math.min(4.0, Math.max(0.6, _touchStartZoom * scale));
+            var newMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            var newMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            STATE.zoom = newZoom;
+            STATE.panX = _touchStartPanX + (newMidX - _touchMidX) * (newZoom / _touchStartZoom);
+            STATE.panY = _touchStartPanY + (newMidY - _touchMidY) * (newZoom / _touchStartZoom);
+            updateZoomTransform();
+        } else if (_singleTouch && STATE.isDragging && e.touches.length === 1) {
+            STATE.panX = e.touches[0].clientX - STATE.dragStartX;
+            STATE.panY = e.touches[0].clientY - STATE.dragStartY;
+            updateZoomTransform();
+        }
+    }, { passive: false });
+    
+    viewport.addEventListener('touchend', function(e) {
+        _isPinching = false;
+        _singleTouch = false;
+        STATE.isDragging = false;
+    });
+}
+
+function initMapSVG_callMobileZoom() {
+    initMobileZoom();
 }
 
 function zoomMap(factor) {
@@ -2688,7 +2830,14 @@ function switchTab(tabId) {
 function toggleMobileConsole() {
     if (STATE._device !== 'mobile') return;
     const cs = document.querySelector('.console-section');
-    if (cs) cs.classList.toggle('expanded');
+    if (cs) {
+        const isExpanded = cs.classList.contains('expanded');
+        if (isExpanded) {
+            cs.classList.remove('expanded');
+        } else {
+            cs.classList.add('expanded');
+        }
+    }
 }
 function expandMobileConsole() {
     if (STATE._device !== 'mobile') return;
@@ -4554,16 +4703,11 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 
     <!-- Mobile: floating toggle for console panel -->
-    <button class="mobile-toggle" id="btn-mobile-toggle" onclick="toggleMobileConsole()" title="Panel">☰</button>
+    
     <script>
     // Register service worker for PWA
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-    // Mobile console toggle
-    function toggleMobileConsole() {
-        const cs = document.querySelector('.console-section');
-        if (cs) cs.classList.toggle('collapsed');
     }
     </script>
 
@@ -4575,7 +4719,11 @@ window.addEventListener('DOMContentLoaded', () => {
         <button class="mobile-quick-btn next-turn" onclick="nextTurn()" title="Siguiente Turno">⏭️</button>
     </div>
     <!-- Mobile: drag handle for console -->
-    <button class="mobile-toggle-btn" id="mobile-drag-handle" onclick="toggleMobileConsole()"></button>
+    <!-- Mobile: visible console toggle bar -->
+            <div class="mobile-console-toggle-bar" onclick="toggleMobileConsole()">
+                <div class="mobile-toggle-handle"></div>
+                <span class="mobile-toggle-label">PANEL</span>
+            </div>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2168bd5ab08fdc9',t:'MTc4NTEwMTg1Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a216a4af1b42b112',t:'MTc4NTEwMjg3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
