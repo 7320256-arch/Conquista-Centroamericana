@@ -1,0 +1,26 @@
+{
+  "background_color": "#1f52a5",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Conquista CA 2026",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Conquista CA 2026",
+  "start_url": "/",
+  "theme_color": "#070a0e",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "id": "conquista-ca-2026",
+  "description": "Juego de estrategia y conquista de países",
+  "lang": "es",
+  "categories": [
+    "entertainment",
+    "games"
+  ]
+}
