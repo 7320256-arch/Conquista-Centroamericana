@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,6 +22,140 @@
     --font-sans: 'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
     --touch-min: 44px;
 }
+
+/* === DEVICE SELECTION === */
+.device-grid { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.device-card {
+    background:linear-gradient(135deg, #182230, #111720);
+    border:2px solid #2a384b; border-radius:10px; padding:16px 12px;
+    cursor:pointer; text-align:center; flex:1; min-width:120px; max-width:200px;
+    transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.device-card:active, .device-card:hover { border-color:var(--cyan-glow); transform:translateY(-3px); }
+.device-card .device-icon { font-size:2.5rem; }
+.device-card .device-title { font-size:0.95rem; font-weight:700; color:#fff; }
+.device-card .device-desc { font-size:0.7rem; color:var(--text-dim); line-height:1.3; }
+
+/* === MOBILE LAYOUT (body.mobile-device) === */
+body.mobile-device .main-container { flex-direction:column; }
+body.mobile-device .map-section { flex:1; border-right:none; min-height:0; }
+body.mobile-device .map-toolbar { min-height:32px; padding:0 4px; flex-wrap:wrap; gap:2px; }
+body.mobile-device .filter-btn { font-size:0.58rem; padding:2px 5px; min-height:26px; border-radius:2px; }
+body.mobile-device .zoom-btn { width:26px; height:26px; font-size:0.7rem; min-width:26px; min-height:26px; }
+
+/* Mobile: console becomes bottom bar + slide-up panels */
+body.mobile-device .console-section {
+    position:fixed; bottom:0; left:0; right:0; width:100%; min-width:100%; max-height:50vh;
+    border-radius:14px 14px 0 0; border-left:none; border-top:2px solid var(--cyan-glow);
+    box-shadow:0 -6px 25px rgba(0,0,0,0.8); z-index:150;
+    transform:translateY(calc(100% - 52px)); /* Show only tab bar by default */
+    transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    background:var(--panel-bg);
+}
+body.mobile-device .console-section.expanded { transform:translateY(0); }
+body.mobile-device .console-tabs { 
+    padding:0 4px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    background:#0a0f18; border-bottom:1px solid var(--panel-border);
+    min-height:48px; display:flex; align-items:center;
+}
+body.mobile-device .tab-btn {
+    font-size:0.55rem; padding:6px 1px; min-width:36px; min-height:44px;
+    border-bottom-width:2px; gap:1px; flex-shrink:0;
+}
+body.mobile-device .tab-icon { font-size:0.75rem; }
+body.mobile-device .console-content { 
+    padding:8px; gap:6px; font-size:0.7rem; max-height:calc(50vh - 52px);
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
+body.mobile-device .card { padding:8px; }
+body.mobile-device .card-header { font-size:0.72rem; margin-bottom:6px; }
+body.mobile-device .stat-box { padding:4px; }
+body.mobile-device .stat-label { font-size:0.6rem; }
+body.mobile-device .stat-value { font-size:0.78rem; }
+body.mobile-device .action-item { padding:6px; gap:3px; }
+body.mobile-device .action-info h5 { font-size:0.72rem; }
+body.mobile-device .action-info p { font-size:0.65rem; line-height:1.2; }
+body.mobile-device .btn-action { font-size:0.65rem; padding:5px 8px; min-height:34px; border-radius:6px; }
+body.mobile-device .btn-action:disabled { opacity:0.3; }
+body.mobile-device .action-cost { font-size:0.62rem; margin-right:3px; }
+body.mobile-device .diplo-item { padding:8px; margin-bottom:6px; }
+body.mobile-device .diplo-name { font-size:0.78rem; }
+body.mobile-device .diplo-actions { gap:3px; }
+body.mobile-device .btn-diplo { font-size:0.6rem; padding:4px 3px; min-width:55px; }
+body.mobile-device .tooltip { font-size:0.68rem; min-width:150px; max-width:85vw; padding:6px; }
+body.mobile-device .tooltip h4 { font-size:0.72rem; }
+body.mobile-device .tooltip-row { font-size:0.62rem; }
+
+/* Mobile header: compact */
+body.mobile-device header { min-height:44px; padding:0 6px; gap:2px; }
+body.mobile-device .header-title h1 { font-size:0.72rem; letter-spacing:0; }
+body.mobile-device .turn-badge { font-size:0.6rem; padding:2px 5px; }
+body.mobile-device .mode-badge { display:none; }
+body.mobile-device .faction-badge { font-size:0.65rem; padding:2px 5px; }
+body.mobile-device .faction-color-dot { width:8px; height:8px; }
+body.mobile-device .resource-bar { gap:2px; flex-wrap:wrap; }
+body.mobile-device .res-item { font-size:0.58rem; padding:2px 4px; }
+body.mobile-device .res-icon { font-size:0.7rem; }
+body.mobile-device .res-val { font-size:0.6rem; }
+body.mobile-device .res-rate { display:none; }
+body.mobile-device .header-actions { gap:2px; }
+body.mobile-device .header-actions .btn { font-size:0.58rem; padding:3px 6px; min-height:30px; }
+body.mobile-device .header-actions .btn-primary { padding:4px 8px; font-size:0.6rem; min-height:30px; }
+
+/* Mobile modals: bigger touch targets */
+body.mobile-device .modal-box { max-width:95vw; max-height:88vh; padding:10px; }
+body.mobile-device .modal-box h2 { font-size:1rem; }
+body.mobile-device .modal-box p { font-size:0.75rem; margin-bottom:8px; }
+body.mobile-device .modal-close { top:8px; right:8px; font-size:1.5rem; min-height:40px; min-width:40px; }
+body.mobile-device .mode-grid { gap:6px; }
+body.mobile-device .mode-card { padding:10px; min-height:75px; }
+body.mobile-device .mode-card .mode-icon { font-size:1.6rem; }
+body.mobile-device .mode-card .mode-title { font-size:0.78rem; }
+body.mobile-device .mode-card .mode-desc { font-size:0.6rem; }
+body.mobile-device .faction-grid { gap:6px; }
+body.mobile-device .faction-select-card { padding:8px; }
+body.mobile-device .faction-select-card h3 { font-size:0.78rem; }
+body.mobile-device .faction-select-card p { font-size:0.62rem; }
+body.mobile-device .faction-bonus { font-size:0.62rem; }
+
+/* Mobile: disable some hover effects */
+body.mobile-device .region-path:hover { stroke:#0a0f16; stroke-width:1.5; filter:none; }
+body.mobile-device .btn:hover { background:#1d2838; border-color:#33445b; }
+body.mobile-device .btn:active { background:#2a394f; border-color:var(--cyan-glow); }
+body.mobile-device .mode-card:hover { transform:none; border-color:#2a384b; }
+body.mobile-device .mode-card:active { transform:scale(0.97); border-color:var(--cyan-glow); }
+
+/* Mobile: floating quick action button */
+.mobile-quick-actions {
+    display:none; position:fixed; bottom:60px; right:8px; z-index:200;
+    flex-direction:column; gap:6px;
+}
+body.mobile-device .mobile-quick-actions { display:flex; }
+.mobile-quick-btn {
+    width:48px; height:48px; border-radius:50%; border:none;
+    font-size:1.3rem; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 12px rgba(0,0,0,0.5); cursor:pointer;
+    -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+}
+.mobile-quick-btn.attack { background:#882235; color:#fff; }
+.mobile-quick-btn.next-turn { background:linear-gradient(135deg, #0077ff, #00d66c); color:#fff; }
+.mobile-quick-btn.diplo { background:#1e2d3e; color:var(--cyan-glow); }
+.mobile-quick-btn.fleet { background:#0d2a4a; color:#00aaff; }
+
+/* Tablet layout */
+body.tablet-device .console-section { width:320px; min-width:280px; }
+body.tablet-device .card { padding:10px; }
+body.tablet-device .tab-btn { font-size:0.62rem; }
+body.tablet-device .btn { font-size:0.72rem; }
+
+/* Show/hide mobile toggle button */
+.mobile-toggle-btn { display:none; }
+body.mobile-device .mobile-toggle-btn {
+    display:flex; position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
+    z-index:160; width:40px; height:6px; border-radius:3px;
+    background:rgba(255,255,255,0.3); border:none; cursor:pointer;
+}
+
 * { box-sizing:border-box; margin:0; padding:0; }
 html, body { width:100%; height:100%; overflow:hidden; }
 body {
@@ -1031,6 +1164,29 @@ select { font-size:0.8rem; min-height:36px; -webkit-appearance:none; }
         <div class="modal-box" style="max-width:820px;">
             <h2>⚔️ CONQUISTA CENTROAMERICANA 2026</h2>
             
+            <!-- STEP 0: CHOOSE DEVICE -->
+            <div class="welcome-step" id="welcome-step-device">
+                <p style="text-align:center; margin-bottom:15px; color:var(--text-dim); font-size:1rem;">¿En qué dispositivo estás jugando?</p>
+                <p style="text-align:center; margin-bottom:20px; color:var(--text-dim); font-size:0.8rem;">Esto adapta los controles y la disposición del juego a tu pantalla.</p>
+                <div class="device-grid">
+                    <div class="device-card" onclick="selectDevice('desktop')">
+                        <span class="device-icon">🖥️</span>
+                        <div class="device-title">PC / Laptop</div>
+                        <div class="device-desc">Pantalla grande. Panel lateral con todas las pestañas visibles.</div>
+                    </div>
+                    <div class="device-card" onclick="selectDevice('tablet')">
+                        <span class="device-icon">📱</span>
+                        <div class="device-title">Tablet</div>
+                        <div class="device-desc">Pantalla mediana. Panel compacto adaptable al mapa.</div>
+                    </div>
+                    <div class="device-card" onclick="selectDevice('mobile')">
+                        <span class="device-icon">📲</span>
+                        <div class="device-title">Teléfono Móvil</div>
+                        <div class="device-desc">Pantalla pequeña. Mapa a pantalla completa, menú deslizable.</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- STEP 1: CHOOSE GAME MODE -->
             <div class="welcome-step" id="welcome-step-mode">
                 <p style="text-align:center; margin-bottom:15px; color:var(--text-dim);">Selecciona el modo de juego</p>
@@ -1659,6 +1815,14 @@ function createFactionsDiplomacy(mode, playerFactionId) {
 // --- INITIALIZE GAME ---
 function startNewGame(mode, playerFactionId, civilCountry, aiCivilSide) {
     playSelect();
+
+    // Apply device layout class
+    document.body.classList.remove('mobile-device', 'tablet-device', 'desktop-device');
+    const dev = STATE._device || 'desktop';
+    if (dev === 'mobile') document.body.classList.add('mobile-device');
+    else if (dev === 'tablet') document.body.classList.add('tablet-device');
+    else document.body.classList.add('desktop-device');
+    
     STATE.gameMode = mode;
     STATE.playerFaction = playerFactionId;
     STATE.civilWarCountry = civilCountry || null;
@@ -1874,11 +2038,30 @@ function closeModal(id) {
 }
 
 // === 06_welcome.js ===
+// --- DEVICE SELECTION (Step 0) ---
+function selectDevice(device) {
+    playClick();
+    STATE._device = device;
+    
+    // Apply device class to body
+    document.body.classList.remove('mobile-device', 'tablet-device', 'desktop-device');
+    if (device === 'mobile') {
+        document.body.classList.add('mobile-device');
+    } else if (device === 'tablet') {
+        document.body.classList.add('tablet-device');
+    } else {
+        document.body.classList.add('desktop-device');
+    }
+    
+    // Proceed to mode selection
+    selectWelcomeMode('mode');
+}
+
 // --- NEW WELCOME WIZARD NAVIGATION ---
 function selectWelcomeMode(mode) {
     playClick();
     // Hide all steps
-    ['mode','total','classic','civilwar','survival','multiplayer'].forEach(s => {
+    ['device','mode','total','classic','civilwar','survival','multiplayer'].forEach(s => {
         const el = document.getElementById('welcome-step-' + s);
         if (el) el.classList.add('hidden');
     });
@@ -1893,9 +2076,8 @@ function selectWelcomeMode(mode) {
         STATE.gameMode = 'survival';
         renderSurvivalCountryGrid();
     }
-
     if (mode === 'multiplayer') {
-        STATE.gameMode = 'classic'; // MP always uses classic factions
+        STATE.gameMode = 'classic';
         STATE._mpIsConnected = false;
         STATE.p2p = STATE.p2p || { isMultiplayer: false, isHost: false, peer: null, connections: [], hostConn: null, readyPlayers: new Set(), roomCode: '' };
         STATE.p2p.isMultiplayer = false;
@@ -1905,7 +2087,6 @@ function selectWelcomeMode(mode) {
         _mpSelectedFaction = null;
         renderMPFactionGrids();
         updateMPNickname();
-        // Re-enable join button and input
         const joinBtn = document.getElementById('btn-mp-join');
         const joinInput = document.getElementById('p2p-join-input');
         if (joinBtn) joinBtn.disabled = false;
@@ -1914,7 +2095,7 @@ function selectWelcomeMode(mode) {
 }
 function goWelcomeBack() {
     playClick();
-    ['mode','total','classic','civilwar','survival','multiplayer'].forEach(s => {
+    ['device','mode','total','classic','civilwar','survival','multiplayer'].forEach(s => {
         const el = document.getElementById('welcome-step-' + s);
         if (el) el.classList.add('hidden');
     });
@@ -2501,6 +2682,25 @@ function switchTab(tabId) {
     if (tabId === 'market') renderMarketTab();
     if (tabId === 'fleet') renderFleetTab();
 }
+
+
+// --- MOBILE CONSOLE TOGGLE ---
+function toggleMobileConsole() {
+    if (STATE._device !== 'mobile') return;
+    const cs = document.querySelector('.console-section');
+    if (cs) cs.classList.toggle('expanded');
+}
+function expandMobileConsole() {
+    if (STATE._device !== 'mobile') return;
+    const cs = document.querySelector('.console-section');
+    if (cs) cs.classList.add('expanded');
+}
+function collapseMobileConsole() {
+    if (STATE._device !== 'mobile') return;
+    const cs = document.querySelector('.console-section');
+    if (cs) cs.classList.remove('expanded');
+}
+
 
 function updateUI() {
     const pf = FACTIONS[STATE.playerFaction];
@@ -4341,11 +4541,13 @@ window.addEventListener('DOMContentLoaded', () => {
         const cs = document.querySelector('.console-section');
         if (cs) cs.classList.add('collapsed');
     }
-    openModal('modal-faction-select');
+    // Show device selection first (Step 0)
+    selectWelcomeMode('device');
     // Initialize state defaults
     if (!STATE.playerName) STATE.playerName = '';
     if (!STATE.fleets) STATE.fleets = {};
     if (!STATE.mpOccupiedFactions) STATE.mpOccupiedFactions = {};
+    if (!STATE._device) STATE._device = 'desktop';
     if (!STATE.p2p) STATE.p2p = { isMultiplayer: false, isHost: false, peer: null, connections: [], hostConn: null, readyPlayers: new Set(), roomCode: '' };
 });
 
@@ -4364,5 +4566,16 @@ window.addEventListener('DOMContentLoaded', () => {
         if (cs) cs.classList.toggle('collapsed');
     }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2161a5edcc07416',t:'MTc4NTA5NzIwNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+    <!-- Mobile: quick action floating buttons -->
+    <div class="mobile-quick-actions" id="mobile-quick-actions">
+        <button class="mobile-quick-btn attack" onclick="switchTab('command'); expandMobileConsole()" title="Mando">⚔️</button>
+        <button class="mobile-quick-btn diplo" onclick="switchTab('diplo'); expandMobileConsole()" title="Diplomacia">🤝</button>
+        <button class="mobile-quick-btn fleet" onclick="switchTab('fleet'); expandMobileConsole()" title="Flota">⚓</button>
+        <button class="mobile-quick-btn next-turn" onclick="nextTurn()" title="Siguiente Turno">⏭️</button>
+    </div>
+    <!-- Mobile: drag handle for console -->
+    <button class="mobile-toggle-btn" id="mobile-drag-handle" onclick="toggleMobileConsole()"></button>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2168bd5ab08fdc9',t:'MTc4NTEwMTg1Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
