@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Conquista CA 2026">
@@ -96,11 +96,16 @@ body.mobile-device .mobile-console-toggle-bar { display:block; }
 /* === ZOOM ISOLATION: only the SVG map zooms, NOT the page === */
 body.mobile-device {
     overflow:hidden;
-    touch-action:manipulation;
+    touch-action:pan-x pan-y;
+}
+body.mobile-device .map-section {
+    touch-action:pan-x pan-y pinch-zoom;
 }
 body.mobile-device .map-viewport {
     overflow:hidden;
-    touch-action:manipulation;
+    touch-action:pan-x pan-y pinch-zoom;
+    -webkit-user-select:none;
+    user-select:none;
 }
 /* The zoom transform ONLY applies to #map-zoom-group inside the SVG.
    The SVG itself stays fixed at 100% width/height.
@@ -154,16 +159,16 @@ body.mobile-device .tooltip h4 { font-size:0.72rem; }
 body.mobile-device .tooltip-row { font-size:0.62rem; }
 
 /* Mobile header: compact */
-body.mobile-device header { min-height:44px; padding:0 6px; gap:2px; }
-body.mobile-device .header-title h1 { font-size:0.72rem; letter-spacing:0; }
+body.mobile-device header { min-height:42px; padding:0 4px; gap:2px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+body.mobile-device .header-title h1 { font-size:0.68rem; letter-spacing:0; white-space:nowrap; }
 body.mobile-device .turn-badge { font-size:0.6rem; padding:2px 5px; }
 body.mobile-device .mode-badge { display:none; }
-body.mobile-device .faction-badge { font-size:0.65rem; padding:2px 5px; }
+body.mobile-device .faction-badge { font-size:0.6rem; padding:2px 4px; }
 body.mobile-device .faction-color-dot { width:8px; height:8px; }
-body.mobile-device .resource-bar { gap:2px; flex-wrap:wrap; }
-body.mobile-device .res-item { font-size:0.58rem; padding:2px 4px; }
-body.mobile-device .res-icon { font-size:0.7rem; }
-body.mobile-device .res-val { font-size:0.6rem; }
+body.mobile-device .resource-bar { gap:4px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; flex:1; min-width:0; }
+body.mobile-device .res-item { font-size:0.62rem; padding:3px 6px; min-width:44px; text-align:center; flex-shrink:0; }
+body.mobile-device .res-icon { font-size:0.8rem; }
+body.mobile-device .res-val { font-size:0.7rem; display:block; }
 body.mobile-device .res-rate { display:none; }
 body.mobile-device .header-actions { gap:2px; }
 body.mobile-device .header-actions .btn { font-size:0.58rem; padding:3px 6px; min-height:30px; }
@@ -210,6 +215,21 @@ body.mobile-device .mobile-quick-actions { display:flex; }
 .mobile-quick-btn.fleet { background:#0d2a4a; color:#00aaff; }
 
 /* Tablet layout */
+
+/* === TABLET: normal console, just compact === */
+body.tablet-device .console-section {
+    position:relative; width:320px; min-width:280px; flex-shrink:0;
+    transform:none; border-left:1px solid #000; border-top:none;
+    border-radius:0; box-shadow:none; z-index:5;
+    max-height:none; transition:none;
+    background:var(--panel-bg);
+}
+body.tablet-device .console-section.expanded { transform:none; }
+body.tablet-device .mobile-console-close { display:none !important; }
+body.tablet-device .mobile-console-toggle-bar { display:none !important; }
+body.tablet-device .mobile-quick-actions { display:none !important; }
+body.tablet-device .mobile-toggle-btn { display:none !important; }
+body.tablet-device .map-viewport { padding-bottom:0 !important; }
 body.tablet-device .console-section { width:320px; min-width:280px; }
 body.tablet-device .card { padding:10px; }
 body.tablet-device .tab-btn { font-size:0.62rem; }
@@ -2588,7 +2608,11 @@ function _getTouchDist(t1, t2) {
 
 function initMobileZoom() {
     var viewport = document.getElementById('map-viewport');
-    if (!viewport) return;
+    if (!viewport) {
+        // Try svg directly
+        viewport = document.getElementById('ca-map');
+        if (!viewport) return;
+    }
     
     viewport.addEventListener('touchstart', function(e) {
         if (e.touches.length === 2) {
@@ -2828,7 +2852,7 @@ function switchTab(tabId) {
 
 // --- MOBILE CONSOLE TOGGLE ---
 function toggleMobileConsole() {
-    if (STATE._device !== 'mobile') return;
+    if (STATE._device === 'desktop') return; // Desktop never toggles
     const cs = document.querySelector('.console-section');
     if (cs) {
         const isExpanded = cs.classList.contains('expanded');
@@ -2840,12 +2864,12 @@ function toggleMobileConsole() {
     }
 }
 function expandMobileConsole() {
-    if (STATE._device !== 'mobile') return;
+    if (STATE._device === 'desktop') return;
     const cs = document.querySelector('.console-section');
     if (cs) cs.classList.add('expanded');
 }
 function collapseMobileConsole() {
-    if (STATE._device !== 'mobile') return;
+    if (STATE._device === 'desktop') return;
     const cs = document.querySelector('.console-section');
     if (cs) cs.classList.remove('expanded');
 }
@@ -4725,5 +4749,5 @@ window.addEventListener('DOMContentLoaded', () => {
                 <span class="mobile-toggle-label">PANEL</span>
             </div>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a216a4af1b42b112',t:'MTc4NTEwMjg3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a216c505de798db8',t:'MTc4NTEwNDE5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
