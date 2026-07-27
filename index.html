@@ -1432,7 +1432,8 @@ select { font-size:0.8rem; min-height:36px; -webkit-appearance:none; }
             <div class="welcome-step hidden" id="welcome-step-multiplayer">
                 <button class="back-btn" onclick="goWelcomeBack()">◀ Volver al menú principal</button>
                 <h2 style="color:var(--purple-glow); border-bottom-color:#3a1854; margin-bottom:15px;">🌐 Modo Multijugador (WebRTC P2P)</h2>
-                <p style="margin-bottom:8px;">Conéctate con amigos sin servidores. Elige tu nombre, tu facción y crea o únete a una sala.</p>
+                <p style="margin-bottom:8px;">Conéctate con amigos sin servidores. <span id="mp-online-status" style="color:#00ff66;">🟢 En línea</span></p>
+                <p style="font-size:0.7rem; color:var(--text-dim); margin-bottom:8px;">Los modos single-player funcionan <strong>100% sin conexión</strong>.</p>
                 
                 <div class="nickname-section">
                     <label style="color:#fff; font-weight:bold; display:block; margin-bottom:4px;">👤 Tu Nombre / Sobrenombre:</label>
@@ -2169,6 +2170,12 @@ function selectWelcomeMode(mode) {
         renderSurvivalCountryGrid();
     }
     if (mode === 'multiplayer') {
+        const statusEl = document.getElementById('mp-online-status');
+        if (typeof Peer === 'undefined') {
+            if (statusEl) { statusEl.textContent = '🔴 Sin conexión'; statusEl.style.color = '#ff3355'; }
+        } else {
+            if (statusEl) { statusEl.textContent = '🟢 En línea'; statusEl.style.color = '#00ff66'; }
+        }
         STATE.gameMode = 'classic';
         STATE._mpIsConnected = false;
         STATE.p2p = STATE.p2p || { isMultiplayer: false, isHost: false, peer: null, connections: [], hostConn: null, readyPlayers: new Set(), roomCode: '' };
@@ -4349,6 +4356,13 @@ function checkVictoryConditions() {
 
 // === 21_p2p.js ===
 // --- MULTIPLAYER UI FUNCTIONS ---
+function isP2PAvailable() {
+    return typeof Peer !== 'undefined' && typeof _peerjsOnline !== 'undefined' && _peerjsOnline === true;
+}
+function isOnline() {
+    return typeof _peerjsOnline !== 'undefined' ? _peerjsOnline : typeof Peer !== 'undefined';
+}
+
 function updateMPNickname() {
     const input = document.getElementById('mp-nickname-input');
     STATE.playerName = input ? input.value.trim() : '';
@@ -4415,7 +4429,7 @@ function selectMPFaction(factionId, role) {
 // --- WEBRTC P2P MULTIPLAYER ENGINE ("SIN SERVIDOR DE PAGO") ---
 function initP2PHost() {
     if (typeof Peer === 'undefined') {
-        showBanner('❌ Librería PeerJS P2P no disponible. Verifica tu conexión a internet para habilitar multijugador.');
+        showBanner('📡 Sin conexión a internet. El Modo Multijugador requiere conexión para funcionar. Los 4 modos single-player están disponibles sin conexión.');
         return;
     }
     if (!STATE.playerName || !_mpSelectedFaction) {
@@ -4488,7 +4502,7 @@ function copyP2PCode() {
 
 function joinP2PRoom() {
     if (typeof Peer === 'undefined') {
-        showBanner('❌ Librería PeerJS P2P no disponible. Verifica tu conexión.');
+        showBanner('📡 Sin conexión. El Modo Multijugador requiere internet. Juega en modo single-player.');
         return;
     }
     if (!STATE.playerName) {
@@ -4749,5 +4763,5 @@ window.addEventListener('DOMContentLoaded', () => {
                 <span class="mobile-toggle-label">PANEL</span>
             </div>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a216c505de798db8',t:'MTc4NTEwNDE5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a217d5bdfcdc7d75',t:'MTc4NTExNTM2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
